@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 int isCritical(float temperature, float pulseRate, float spo2) {
     if (temperature > 102 || temperature < 95) {
         return 1;
@@ -17,7 +16,6 @@ int isCritical(float temperature, float pulseRate, float spo2) {
     return 0;
 }
 
-
 void handleAlert(const char* message) {
     printf("%s\n", message);
     for (int i = 0; i < 6; i++) {
@@ -29,7 +27,6 @@ void handleAlert(const char* message) {
         sleep(1);
     }
 }
-
 
 int vitalsOk(float temperature, float pulseRate, float spo2) {
     int critical_code = isCritical(temperature, pulseRate, spo2);
