@@ -16,7 +16,7 @@ int isCritical(float temperature, float pulseRate, float spo2) {
 }
 
 int isWarning(float temperature, float pulseRate, float spo2) {
-    if (temperature > 102 - TEMP_TOLERANCE) return 1; // Approaching hyperthermia
+    if (temperature > 102 - TEMP_TOLERANCE) return 1;  // Approaching hyperthermia
     if (temperature < 95 + TEMP_TOLERANCE) return 2;  // Approaching hypothermia
     if (pulseRate > 100 - PULSE_TOLERANCE) return 3;  // Approaching high pulse rate
     if (pulseRate < 60 + PULSE_TOLERANCE) return 4;   // Approaching low pulse rate
