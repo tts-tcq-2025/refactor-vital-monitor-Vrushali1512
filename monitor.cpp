@@ -1,4 +1,4 @@
-#include "./monitor.hpp"
+#include "./monitor.h"
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
