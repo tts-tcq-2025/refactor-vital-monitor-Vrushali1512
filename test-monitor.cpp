@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "./monitor.h"
+#include "./monitor.hpp"
 
 TEST(Monitor, NotOkWhenAnyVitalIsOffRange) {
     // Critical Cases
@@ -29,3 +29,4 @@ TEST(Monitor, NotOkWhenAnyVitalIsOffRange) {
     // OK Case
     ASSERT_TRUE(vitalsOk(98.1, 70, 98));
 }
+
