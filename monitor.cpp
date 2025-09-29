@@ -1,26 +1,57 @@
 #include "./monitor.h"
-#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 
-// Early warning tolerances
 #define TEMP_TOLERANCE (0.015 * 102)
 #define PULSE_TOLERANCE (0.015 * 100)
 #define SPO2_TOLERANCE (0.015 * 100)
 
+typedef struct {
+    int code;
+    int (*condition)(float temperature, float pulseRate, float spo2);
+} ConditionCheck;
+
+static int tempHighCritical(float t, float p, float s) { return t > 102; }
+static int tempLowCritical(float t, float p, float s) { return t < 95; }
+static int pulseLowCritical(float t, float p, float s) { return p < 60; }
+static int pulseHighCritical(float t, float p, float s) { return p > 100; }
+static int spo2LowCritical(float t, float p, float s) { return s < 90; }
+
 int isCritical(float temperature, float pulseRate, float spo2) {
-    if (temperature > 102 || temperature < 95) return 1;
-    if (pulseRate < 60 || pulseRate > 100) return 2;
-    if (spo2 < 90) return 3;
+    static const ConditionCheck criticals[] = {
+        {1, tempHighCritical},
+        {1, tempLowCritical},
+        {2, pulseLowCritical},
+        {2, pulseHighCritical},
+        {3, spo2LowCritical},
+    };
+    for (int i = 0; i < sizeof(criticals)/sizeof(criticals[0]); i++) {
+        if (criticals[i].condition(temperature, pulseRate, spo2)) {
+            return criticals[i].code;
+        }
+    }
     return 0;
 }
 
+static int tempHighWarning(float t, float p, float s) { return t > 102 - TEMP_TOLERANCE; }
+static int tempLowWarning(float t, float p, float s) { return t < 95 + TEMP_TOLERANCE; }
+static int pulseHighWarning(float t, float p, float s) { return p > 100 - PULSE_TOLERANCE; }
+static int pulseLowWarning(float t, float p, float s) { return p < 60 + PULSE_TOLERANCE; }
+static int spo2LowWarning(float t, float p, float s) { return s < 90 + SPO2_TOLERANCE; }
+
 int isWarning(float temperature, float pulseRate, float spo2) {
-    if (temperature > 102 - TEMP_TOLERANCE) return 1;  // Approaching hyperthermia
-    if (temperature < 95 + TEMP_TOLERANCE) return 2;  // Approaching hypothermia
-    if (pulseRate > 100 - PULSE_TOLERANCE) return 3;  // Approaching high pulse rate
-    if (pulseRate < 60 + PULSE_TOLERANCE) return 4;   // Approaching low pulse rate
-    if (spo2 < 90 + SPO2_TOLERANCE) return 5;         // Approaching low oxygen saturation
+    static const ConditionCheck warnings[] = {
+        {1, tempHighWarning},
+        {2, tempLowWarning},
+        {3, pulseHighWarning},
+        {4, pulseLowWarning},
+        {5, spo2LowWarning},
+    };
+    for (int i = 0; i < sizeof(warnings)/sizeof(warnings[0]); i++) {
+        if (warnings[i].condition(temperature, pulseRate, spo2)) {
+            return warnings[i].code;
+        }
+    }
     return 0;
 }
 
@@ -39,22 +70,19 @@ void handleAlert(const char* message) {
 int vitalsOk(float temperature, float pulseRate, float spo2) {
     int critical_code = isCritical(temperature, pulseRate, spo2);
     if (critical_code != 0) {
-        // Map critical codes to messages
-        const char* criticalMessages[] = {
+        static const char* criticalMessages[] = {
             "",  // 0 unused
             "Temperature is critical!",
             "Pulse Rate is out of range!",
             "Oxygen Saturation out of range!"
         };
-
         handleAlert(criticalMessages[critical_code]);
         return 0;
     }
 
     int warning_code = isWarning(temperature, pulseRate, spo2);
     if (warning_code != 0) {
-        // Map warning codes to messages
-        const char* warningMessages[] = {
+        static const char* warningMessages[] = {
             "",  // 0 unused
             "Warning: Approaching hyperthermia",
             "Warning: Approaching hypothermia",
