@@ -46,3 +46,9 @@ Shorten the Semantic distance
 - Functional to express relation between input and output
 - Object oriented to encapsulate state with actions
 - Aspect oriented to capture repeating aspects
+
+## Extension 1: Early Warning
+
+In addition to the alarm that is printed after the limit is breached. A 'warning' level with a tolerance of 1.5% of the upper-limit is introduced. Example: If the body-temperature extremeties are 95 and 102, the warning-tolerance is 1.5% of 102 = 1.53. Warnings need to be displayed in these ranges:
+
+95 to 95+1.53 Warning: Approaching hypothermia 102-1.53 to 102, Warning: Approaching hyperthermia, Similar for pulse-rate and SPO2.
